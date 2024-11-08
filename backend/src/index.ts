@@ -21,8 +21,6 @@ app.post("/api/itinerary", async (req: Request, res: Response) => {
   const { startDate, endDate, numberOfPeople, packageOption, destination } =
     req.body;
 
-  console.log(req.body);
-
   if (
     !startDate ||
     !endDate ||
@@ -73,6 +71,7 @@ app.post("/api/itinerary", async (req: Request, res: Response) => {
       }
     );
 
+    console.log(response.data.choices);
     res.status(200).json({
       openAiResponse: response.data.choices[0].message.content,
     });
