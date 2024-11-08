@@ -3,7 +3,8 @@ export interface FormDataProps {
   lastname?: string;
   email: string;
   phone: string;
-  travelDate: string | Date | undefined;
+  startDate: string | Date | undefined;
+  endDate: string | Date | undefined;
   numberOfPeople: number;
   packageOption: string;
   destination: string;

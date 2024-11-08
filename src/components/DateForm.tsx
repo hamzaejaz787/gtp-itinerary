@@ -12,14 +12,14 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { DateRange } from "react-day-picker";
-import { addDays, format } from "date-fns";
+import { format } from "date-fns";
 import { Calendar } from "./ui/calendar";
 import { Label } from "./ui/label";
 
 type DateFormTypes = {
-  travelDate: string | Date | undefined;
   packageOption: string;
+  startDate: string | Date | undefined;
+  endDate: string | Date | undefined;
   numberOfPeople: number;
 };
 
@@ -31,30 +31,38 @@ const DateForm = ({
   numberOfPeople,
   packageOption,
   updateFields,
+  startDate: initialStartDate,
+  endDate: initialEndDate,
 }: DateFormProps) => {
   const [people, setPeople] = React.useState(numberOfPeople || 1);
   const [selectedPackage, setSelectedPackage] = React.useState(packageOption);
-  const [currentDate, setDate] = React.useState<DateRange | undefined>({
-    from: addDays(new Date(), 1),
-    to: addDays(new Date(), 3),
-  });
+  const [startDate, setStartDate] = React.useState<Date | undefined>(
+    initialStartDate ? new Date(initialStartDate) : undefined
+  );
+  const [endDate, setEndDate] = React.useState<Date | undefined>(
+    initialEndDate ? new Date(initialEndDate) : undefined
+  );
 
   const updatePeopleCount = (newCount: number) => {
     setPeople(newCount);
     updateFields({ numberOfPeople: newCount });
   };
 
-  const handleDateSelect = (range: DateRange | undefined) => {
-    if (range?.from && range?.to) {
-      const formattedRange = `${format(range.from, "LLL dd, y")} - ${format(
-        range.to,
-        "LLL dd, y"
-      )}`;
-      updateFields({ travelDate: formattedRange });
-    } else if (range?.from) {
-      updateFields({ travelDate: format(range.from, "LLL dd, y") });
+  const handleStartDateSelect = (date: Date | undefined) => {
+    setStartDate(date);
+    updateFields({ startDate: date });
+  };
+
+  const handleEndDateSelect = (date: Date | undefined) => {
+    if (date && startDate && date >= startDate) {
+      setEndDate(date);
+      updateFields({ endDate: date });
+    } else if (!date) {
+      setEndDate(undefined);
+      updateFields({ endDate: undefined });
+    } else {
+      alert("End date cannot be selected before the start date.");
     }
-    setDate(range);
   };
 
   const handlePackageSelect = (value: string) => {
@@ -72,45 +80,65 @@ const DateForm = ({
     >
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Pick Travel Dates</Label>
+          <Label>Pick Starting Date</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant={"outline"}
                 className={cn(
                   "w-full justify-start items-center gap-1 text-left font-normal",
-                  !currentDate && "text-muted-foreground"
+                  !startDate && "text-muted-foreground"
                 )}
               >
                 <CalendarIcon />
-                {currentDate?.from ? (
-                  currentDate.to ? (
-                    <>
-                      {format(currentDate.from, "LLL dd, y")} -{" "}
-                      {format(currentDate.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(currentDate.from, "LLL dd, y")
-                  )
+                {startDate ? (
+                  format(startDate, "LLL dd, y")
                 ) : (
-                  <span>Pick a date</span>
+                  <span className="text-gray-500">Pick A Date</span>
                 )}
               </Button>
             </PopoverTrigger>
             <PopoverContent align="start">
               <Calendar
                 initialFocus
-                mode="range"
-                defaultMonth={currentDate?.from}
-                selected={currentDate}
-                onSelect={handleDateSelect}
-                numberOfMonths={1}
+                mode="single"
+                selected={startDate}
+                onSelect={handleStartDateSelect}
                 disabled={(date) => date < new Date()}
               />
             </PopoverContent>
           </Popover>
         </div>
-
+        <div className="space-y-2">
+          <Label>Pick Ending Date</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-full justify-start items-center gap-1 text-left font-normal",
+                  !endDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon />
+                {endDate ? (
+                  format(endDate, "LLL dd, y")
+                ) : (
+                  <span className="text-gray-500">Pick A Date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start">
+              <Calendar
+                initialFocus
+                mode="single"
+                selected={endDate}
+                fromDate={startDate}
+                onSelect={handleEndDateSelect}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
         <div className="space-y-2">
           <Label>Select A Package</Label>
           <Select
@@ -130,30 +158,30 @@ const DateForm = ({
             </SelectContent>
           </Select>
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label>Number Of People</Label>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            type="button"
-            onClick={reducePeople}
-            className="items-center text-xl"
-          >
-            -
-          </Button>
-          <strong className="text-xs sm:text-sm font-normal font-Barlow text-gray-600">
-            {people}
-          </strong>
-          <Button
-            variant="outline"
-            type="button"
-            onClick={addPeople}
-            className="items-center text-xl"
-          >
-            +
-          </Button>
+        <div className="space-y-2">
+          <Label>Number Of People</Label>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={reducePeople}
+              className="items-center text-xl"
+            >
+              -
+            </Button>
+            <strong className="text-xs sm:text-sm font-normal font-Barlow text-gray-600">
+              {people}
+            </strong>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={addPeople}
+              className="items-center text-xl"
+            >
+              +
+            </Button>
+          </div>
         </div>
       </div>
     </FormWrapper>

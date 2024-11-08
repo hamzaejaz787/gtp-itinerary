@@ -18,21 +18,30 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.post("/api/itinerary", async (req: Request, res: Response) => {
-  const { travelDate, numberOfPeople, packageOption, destination } = req.body;
+  const { startDate, endDate, numberOfPeople, packageOption, destination } =
+    req.body;
 
-  if (!travelDate || !numberOfPeople || !packageOption || !destination) {
+  console.log(req.body);
+
+  if (
+    !startDate ||
+    !endDate ||
+    !numberOfPeople ||
+    !packageOption ||
+    !destination
+  ) {
     return res.status(400).json({ error: "Missing fields!!" });
   }
 
   const prompt = `Act as a professional trip advisor to create a multi-day itinerary with realistic travel and accommodation stops. Ensure that the itinerary includes different overnight stays near the main activities for each day, if possible, instead of returning to the same base location. Consider nearby towns or guest houses when planning accommodation for each night. You don't have to include the accommodation in the itneray. Make sure to make the travel times realistic, keeping the stops in mind, like reaching Skardu from Islamabad and vice-versa in a day is not possible unless you travel without stops.
-  Consider the provided travel details, including destination name: ${destination}, number of days ${travelDate}, and number of people ${numberOfPeople}. In case of multi-day travel, calculate the return time to the original location, and make sure the final day includes drop-off at Islamabad after completing the itinerary.
+  Consider the provided travel details, including destination name: ${destination}, number of days ${startDate} - ${endDate}, and number of people ${numberOfPeople}. In case of multi-day travel, calculate the return time to the original location, and make sure the final day includes drop-off at Islamabad after completing the itinerary.
   Consider the itinerary should follow this approach to show more varied accommodations and realistic travel flow. If applicable, describe transportation modes (e.g., jeep or car) for any special activities, and mention if ticket prices for attractions include activities like boating or jet skiing.
 
   Do not include any price.
   
-  Please create a detailed itinerary for ${destination} for dates between ${travelDate} days for ${numberOfPeople} people.
+  Please create a detailed itinerary for ${destination} for dates between ${startDate} - ${endDate} days for ${numberOfPeople} people.
 
-  Structure the response as follows:
+  Always structure the response in this format:
   {
     "overview": {
     A string that provides a concise summary of the trip including duration, main destination, key attractions, number of travelers, and any relevant information about the route or transportation. Like 'This 7-day itinerary takes you on a captivating journey through the breathtaking landscapes of Hunza Valley, Pakistan, from November 3 to November 9, 2024. This trip is designed for one traveler and includes key attractions such as Karimabad, Attabad Lake, and the historic Baltit Fort. You will experience scenic drives, delicious local cuisine, and opportunities for adventure activities like boating. The transportation will primarily be in a comfortable car, with travel times adjusted to ensure a leisurely pace and enriching experience.'
