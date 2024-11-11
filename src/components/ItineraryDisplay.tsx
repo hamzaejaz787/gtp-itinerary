@@ -20,10 +20,13 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary }) => {
   } catch (error) {
     console.error("Invalid JSON format:", error);
     return (
-      <div className="flex h-screen justify-center items-center">
+      <div className="flex h-screen justify-center items-center flex-col gap-4">
         <p className="text-red-500">
           Failed to load itinerary details. Please try again.
         </p>
+        <Button asChild>
+          <a href="/">Start Again</a>
+        </Button>
       </div>
     );
   }
@@ -41,10 +44,13 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary }) => {
       </em>
 
       {/* Overview Section */}
-      {itineraryData.overview && itineraryData.overview.summary ? (
+      {itineraryData.overview &&
+      (itineraryData.overview.summary || itineraryData.overview !== "") ? (
         <Card className="shadow-none space-y-2 border-none">
           <CardTitle>Overview</CardTitle>
-          <p className="text-gray-700">{itineraryData.overview.summary}</p>
+          <p className="text-gray-700">
+            {itineraryData.overview.summary || itineraryData.overview}
+          </p>
         </Card>
       ) : (
         <p className="text-gray-600">No overview available.</p>
