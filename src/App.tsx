@@ -1,13 +1,13 @@
+import { FormEvent, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useMultistepForm } from "./hooks/useMultistepForm";
-import { FormEvent, useState } from "react";
 import { FormDataProps } from "./lib/definitions";
-import UserInfoForm from "./components/UserInfoForm";
-import { Button } from "./components/ui/button";
-import LocationForm from "./components/LocationForm";
-import DateForm from "./components/DateForm";
-import ItineraryDisplay from "./components/ItineraryDisplay";
-import Loader from "./components/Loader";
+import UserInfoForm from "@/components/UserInfoForm";
+import { Button } from "@/components/ui/button";
+import LocationForm from "@/components/LocationForm";
+import DateForm from "@/components/DateForm";
+import ItineraryDisplay from "@/components/ItineraryDisplay";
+import Loader from "@/components/Loader";
 
 const INITIAL_DATA: FormDataProps = {
   firstname: "",
