@@ -27,11 +27,10 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary }) => {
       </div>
     );
   }
+  console.log(itineraryData);
 
   const breakdown = itineraryData.breakdown;
   const hasValidBreakdown = Array.isArray(breakdown);
-
-  console.log(itineraryData);
 
   return (
     <div className="my-8 p-6 rounded-lg shadow-md border-gray-200 border max-w-2xl mx-auto space-y-4">
