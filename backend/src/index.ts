@@ -3,6 +3,7 @@ import cors from "cors";
 import axios from "axios";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
+import { format } from "date-fns";
 
 dotenv.config();
 
@@ -49,7 +50,6 @@ app.post("/api/itinerary", async (req: Request, res: Response) => {
   ) {
     return res.status(400).json({ error: "Missing fields!!" });
   }
-
   const prompt = `Develop a comprehensive multi-day itinerary for a travel company that prioritizes comfort, realistic travel pacing, and enriching experiences. Use the following guidelines to ensure the itinerary meets high professional standards:
 Guidelines:
 Optimized Daily Destinations: Structure each day around one primary destination, with overnight accommodations near that day's main activity to avoid backtracking. Select nearby towns or guest houses as options, allowing travelers to immerse themselves in new settings each night.
@@ -100,13 +100,13 @@ Modes of Transportation: Specify transportation modes as applicable (e.g., jeep 
     const emailBody = `
       <p><strong>Email:</strong> ${email}</p>
       <p><strong>Phone:</strong> ${phone}</p>
-      <p><strong>Destination:</strong> ${destination}</p>
-      <p><strong>Start Date:</strong> ${startDate}</p>
-      <p><strong>End Date:</strong> ${endDate}</p>
+      <p style="text-transform: capitalize"><strong>Destination:</strong> ${destination}</p>
+      <p><strong>Start Date:</strong> ${format(startDate, "LLL dd, y")}</p>
+      <p><strong>End Date:</strong> ${format(endDate, "LLL dd, y")}</p>
       <p><strong>Number of People:</strong> ${numberOfPeople}</p>
-      <p><strong>Package Option:</strong> ${packageOption}</p>
+      <p style="text-transform: capitalize"><strong>Package Option:</strong> ${packageOption}</p>
       <h2>Generated Itinerary:</h2>
-      <pre>${openAiResponse}</pre>
+      <pre style="font-size: 14px; font-family: monospace;">${openAiResponse}</pre>
     `;
 
     await transporter.sendMail({
