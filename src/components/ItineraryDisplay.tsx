@@ -30,7 +30,6 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ itinerary }) => {
       </div>
     );
   }
-  console.log(itineraryData);
 
   const breakdown = itineraryData.breakdown;
   const hasValidBreakdown = Array.isArray(breakdown);

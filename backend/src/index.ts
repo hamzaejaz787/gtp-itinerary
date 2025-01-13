@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import axios from "axios";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 
 dotenv.config();
 
@@ -9,6 +10,15 @@ const app: Express = express();
 const PORT = process.env.PORT || 8080;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_API_URL = process.env.OPENAI_API_URL;
+
+//Transporter configuration
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "hejaz389@gmail.com",
+    pass: process.env.NODEMAILER_APP_KEY,
+  },
+});
 
 app.use(cors());
 app.use(express.json());
@@ -18,8 +28,17 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.post("/api/itinerary", async (req: Request, res: Response) => {
-  const { startDate, endDate, numberOfPeople, packageOption, destination } =
-    req.body;
+  const {
+    startDate,
+    endDate,
+    numberOfPeople,
+    packageOption,
+    destination,
+    email,
+    firstname,
+    lastname,
+    phone,
+  } = req.body;
 
   if (
     !startDate ||
@@ -77,8 +96,29 @@ Modes of Transportation: Specify transportation modes as applicable (e.g., jeep 
       }
     );
 
+    const openAiResponse = response.data.choices[0].message.content;
+    const emailBody = `
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Phone:</strong> ${phone}</p>
+      <p><strong>Destination:</strong> ${destination}</p>
+      <p><strong>Start Date:</strong> ${startDate}</p>
+      <p><strong>End Date:</strong> ${endDate}</p>
+      <p><strong>Number of People:</strong> ${numberOfPeople}</p>
+      <p><strong>Package Option:</strong> ${packageOption}</p>
+      <h2>Generated Itinerary:</h2>
+      <pre>${openAiResponse}</pre>
+    `;
+
+    await transporter.sendMail({
+      from: "hejaz389@gmail.com",
+      to: "hejaz389@gmail.com",
+      subject: `Travel Itinerary for ${firstname} ${lastname} to ${destination}`,
+      html: emailBody,
+    });
+
     res.status(200).json({
-      openAiResponse: response.data.choices[0].message.content,
+      message: "Itinerary created and email sent to sales team",
+      openAiResponse,
     });
   } catch (error) {
     console.error(`Error with OpenAi API. ${error}`);

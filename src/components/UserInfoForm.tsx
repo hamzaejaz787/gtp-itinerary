@@ -1,3 +1,5 @@
+import React from "react";
+import { z } from "zod";
 import FormWrapper from "./FormWrapper";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -13,6 +15,16 @@ type UserInfoFormProps = UserInfo & {
   updateFields: (fields: Partial<UserInfo>) => void;
 };
 
+const phoneValidationSchema = z.string().refine(
+  (val) => {
+    const regex = /^(?:\+92|92|03)\d{9}$/;
+    return regex.test(val);
+  },
+  {
+    message: "Invalid phone number!!",
+  }
+);
+
 const UserInfoForm = ({
   email,
   firstname,
@@ -20,6 +32,20 @@ const UserInfoForm = ({
   phone,
   updateFields,
 }: UserInfoFormProps) => {
+  const [errors, setErrors] = React.useState<{ phone?: string }>({});
+
+  const handlePhoneNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const phoneValue = e.target.value;
+    updateFields({ phone: phoneValue });
+
+    try {
+      phoneValidationSchema.parse(phoneValue);
+      setErrors({});
+    } catch (error) {
+      setErrors({ phone: error.errors[0].message });
+    }
+  };
+
   return (
     <FormWrapper title="Step 1" description="Enter Personal Details">
       <Label htmlFor="firstname" className="block">
@@ -58,12 +84,16 @@ const UserInfoForm = ({
       </Label>
       <Input
         name="phone"
-        type="number"
+        type="tel"
         placeholder="+921234567890"
         required
         value={phone}
-        onChange={(e) => updateFields({ phone: e.target.value })}
+        onChange={handlePhoneNumber}
       />
+
+      {errors.phone && (
+        <div className="text-red-500 text-sm">{errors.phone}</div>
+      )}
     </FormWrapper>
   );
 };
