@@ -42,7 +42,9 @@ const UserInfoForm = ({
       phoneValidationSchema.parse(phoneValue);
       setErrors({});
     } catch (error) {
-      setErrors({ phone: error.errors[0].message });
+      if (error instanceof z.ZodError) {
+        setErrors({ phone: error.errors[0].message });
+      }
     }
   };
 
