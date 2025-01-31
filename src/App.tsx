@@ -9,7 +9,7 @@ import DateForm from "@/components/DateForm";
 import ItineraryDisplay from "@/components/ItineraryDisplay";
 import Loader from "@/components/Loader";
 import Footer from "./components/Footer";
-import './fonts.css';
+import "./fonts.css";
 import Header from "./components/Header";
 // });
 
@@ -30,7 +30,7 @@ function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<string | null>(null);
   const [itinerary, setItinerary] = useState<string | null>(null);
-
+  const [isVerificationSent, setIsVerificationSent] = useState<boolean>(false);
   // Update form data fields
   const updateFields = (fields: Partial<FormDataProps>) =>
     setData((prev) => {
@@ -38,11 +38,12 @@ function App() {
     });
 
   // Multi-step form logic
-  const { step, nextStep, previousStep, isFirstStep, isLastStep } = useMultistepForm([
-    <UserInfoForm {...data} updateFields={updateFields} />,
-    <LocationForm {...data} updateFields={updateFields} />,
-    <DateForm {...data} updateFields={updateFields} />,
-  ]);
+  const { step, nextStep, previousStep, isFirstStep, isLastStep } =
+    useMultistepForm([
+      <UserInfoForm {...data} updateFields={updateFields} />,
+      <LocationForm {...data} updateFields={updateFields} />,
+      <DateForm {...data} updateFields={updateFields} />,
+    ]);
 
   // Form submission handler
   const handleSubmit = async (e: FormEvent) => {
@@ -66,6 +67,24 @@ function App() {
       }
       const responseData = await response.json();
       setItinerary(responseData.openAiResponse);
+
+      //Send verification email after itinerary generates
+      const verificationResponse = await fetch(
+        "http://localhost:8080/api/send-verification-email",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: data.email }),
+        }
+      );
+
+      if (!verificationResponse.ok) {
+        const errorData = await verificationResponse.json();
+        throw new Error(errorData.error || "Failed to send verification email");
+      }
+      setIsVerificationSent(true);
     } catch (error) {
       setIsError((error as Error).message);
     } finally {
@@ -73,11 +92,20 @@ function App() {
     }
   };
 
-  // Render itinerary if available
-  if (itinerary) {
+  if (itinerary && isVerificationSent) {
     return (
       <>
-        <Header/>
+        <Header />
+
+        {isVerificationSent && (
+          <Card className="max-w-2xl mx-auto w-full p-6 text-center mt-8">
+            <h2 className="text-xl font-bold">Email Verification Sent</h2>
+            <p>
+              Please check your email ({data.email}) to verify your account.
+            </p>
+          </Card>
+        )}
+
         <ItineraryDisplay itinerary={itinerary} />
         <Footer />
       </>
@@ -86,8 +114,8 @@ function App() {
 
   // Main return with Header, Form, and Footer
   return (
-    <main >
-      <Header/>
+    <main>
+      <Header />
       <div className="min-h-screen bg-slate-200 h-full w-full grid content-center p-8">
         {isLoading && <Loader />}
         <Card className="max-w-2xl mx-auto w-full p-6 relative">
@@ -96,7 +124,11 @@ function App() {
             {isError && <p className="text-red-500">{isError}</p>}
 
             <div className="flex items-center justify-end gap-4">
-              <Button type="button" disabled={isFirstStep} onClick={previousStep}>
+              <Button
+                type="button"
+                disabled={isFirstStep}
+                onClick={previousStep}
+              >
                 Back
               </Button>
 

@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import axios from "axios";
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import { format } from "date-fns";
 
@@ -123,6 +124,64 @@ Modes of Transportation: Specify transportation modes as applicable (e.g., jeep 
   } catch (error) {
     console.error(`Error with OpenAi API. ${error}`);
     res.status(500).json({ error: (error as Error).message });
+  }
+});
+
+//Email verification link
+app.post(
+  "/api/send-verification-email",
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    if (!email) return res.status(400).json({ error: "Email is required" });
+
+    try {
+      const token = jwt.sign({ email }, process.env.JWT_CLIENT_SECRET!, {
+        expiresIn: "1h",
+      });
+
+      console.log(token);
+
+      const verificationLink = `http://localhost:${PORT}/api/verify-email?token=${token}`;
+
+      await transporter.sendMail({
+        from: "hejaz389@gmail.com",
+        to: email,
+        subject: "Verify email",
+        html: `
+        <p>Click on the link below to verify your email:</p> <a href="${verificationLink}">${verificationLink}</a>
+        <p>This link will expire in 1 hour.</p>
+      `,
+      });
+
+      res.status(200).json({ message: "Verification email sent" });
+    } catch (err) {
+      console.error("Error sending verification email: ", err);
+      res.status(500).json({ error: "Faild to send verification email" });
+    }
+  }
+);
+
+//Email verification handler
+app.get("/api/verify-email", (req: Request, res: Response) => {
+  const { token } = req.query;
+
+  if (!token)
+    return res.status(400).json({ error: "Verification token is required" });
+
+  try {
+    const decoded = jwt.verify(token as string, process.env.JWT_CLIENT_SECRET);
+
+    res.status(200).send(`
+      <div style={
+        display:grid, placeContent:center
+      }>
+      <h1>Email verified successfully!</h1>
+      </div>
+      `);
+  } catch (error) {
+    console.error("Invalid or expired token: ", error);
+    res.status(400).send(`<h1>Invalid or expired token</h1>`);
   }
 });
 
