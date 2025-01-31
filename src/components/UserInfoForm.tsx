@@ -17,7 +17,7 @@ type UserInfoFormProps = UserInfo & {
 
 const phoneValidationSchema = z.string().refine(
   (val) => {
-    const regex = /^(?:\+92|92|03)\d{9}$/;
+    const regex = /^(?:\+92\d{10}|92\d{10}|03\d{9})$/;
     return regex.test(val);
   },
   {
